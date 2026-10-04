@@ -19,18 +19,27 @@ public class MyLinkedList {
         this.size = 0;
     }
 
-    public int size() { return size; }
+    public int size() {
+        return size;
+    }
 
     public void add(int x, Metrics metrics) {
         Node newNode = new Node(x);
         if (size == 0) {
             head = tail = newNode;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+            }
         } else {
             tail.next = newNode;
             newNode.prev = tail;
             tail = newNode;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+                metrics.addMove();
+            }
         }
         size++;
     }
@@ -59,7 +68,9 @@ public class MyLinkedList {
     }
 
     public void add(int index, int x, Metrics metrics) {
-        if (index < 0 || index > size) throw new IndexOutOfBoundsException("Index: " + index);
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
         if (index == size) {
             add(x, metrics);
             return;
@@ -69,7 +80,11 @@ public class MyLinkedList {
             newNode.next = head;
             head.prev = newNode;
             head = newNode;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+                metrics.addMove();
+            }
         } else {
             Node target = getNode(index, metrics);
             Node prevNode = target.prev;
@@ -77,31 +92,50 @@ public class MyLinkedList {
             newNode.prev = prevNode;
             newNode.next = target;
             target.prev = newNode;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+                metrics.addMove();
+                metrics.addMove();
+            }
         }
         size++;
     }
 
     public int remove(int index, Metrics metrics) {
-        if (index < 0 || index >= size) throw new IndexOutOfBoundsException("Index: " + index);
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index);
+        }
         Node target = getNode(index, metrics);
         int val = target.value;
 
         if (size == 1) {
             head = tail = null;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+            }
         } else if (target == head) {
             head = head.next;
             head.prev = null;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+            }
         } else if (target == tail) {
             tail = tail.prev;
             tail.next = null;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+            }
         } else {
             target.prev.next = target.next;
             target.next.prev = target.prev;
-            if (metrics != null) { metrics.addMove(); metrics.addMove(); }
+            if (metrics != null) {
+                metrics.addMove();
+                metrics.addMove();
+            }
         }
         size--;
         return val;

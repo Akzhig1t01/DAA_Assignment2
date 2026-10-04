@@ -11,7 +11,9 @@ public class MinHeap {
         this(10);
     }
 
-    public int size() { return size; }
+    public int size() {
+        return size;
+    }
 
     private void ensureCapacity(Metrics metrics) {
         if (size == heap.length) {
@@ -34,12 +36,16 @@ public class MinHeap {
     }
 
     public int peekMin() {
-        if (size == 0) throw new IllegalStateException("Heap is empty");
+        if (size == 0) {
+            throw new IllegalStateException("Heap is empty");
+        }
         return heap[0];
     }
 
     public int extractMin(Metrics metrics) {
-        if (size == 0) throw new IllegalStateException("Heap is empty");
+        if (size == 0) {
+            throw new IllegalStateException("Heap is empty");
+        }
         int min = heap[0];
         if (metrics != null) metrics.addStep();
         heap[0] = heap[size - 1];
@@ -74,7 +80,11 @@ public class MinHeap {
             int right = index * 2 + 2;
             int smallest = left;
 
-            if (metrics != null) { metrics.addStep(); metrics.addStep(); metrics.addComparison(); }
+            if (metrics != null) {
+                metrics.addStep();
+                metrics.addStep();
+                metrics.addComparison();
+            }
             if (right < size) {
                 if (metrics != null) metrics.addComparison();
                 if (heap[right] < heap[left]) {
@@ -82,7 +92,11 @@ public class MinHeap {
                 }
             }
 
-            if (metrics != null) { metrics.addStep(); metrics.addStep(); metrics.addComparison(); }
+            if (metrics != null) {
+                metrics.addStep();
+                metrics.addStep();
+                metrics.addComparison();
+            }
             if (heap[smallest] < heap[index]) {
                 swap(index, smallest, metrics);
                 index = smallest;

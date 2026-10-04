@@ -2,6 +2,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 
 public class Benchmark {
@@ -25,7 +26,6 @@ public class Benchmark {
     }
 
     private static void runW1(int n, PrintWriter writer) {
-        // W1: Random Access
         double[] daTimes = new double[RUNS];
         Metrics[] daMetrics = new Metrics[RUNS];
         double[] listTimes = new double[RUNS];
@@ -41,7 +41,6 @@ public class Benchmark {
                 list.add(val, null);
             }
 
-            // DA Test
             Metrics mDA = new Metrics();
             long t0 = System.nanoTime();
             for (int i = 0; i < 10000; i++) {
@@ -51,10 +50,9 @@ public class Benchmark {
             daTimes[r] = (t1 - t0) / 1_000_000.0;
             daMetrics[r] = mDA;
 
-            // List Test
             Metrics mList = new Metrics();
-            rng = new Random(42); // reset same queries
-            for (int i = 0; i < n; i++) rng.nextInt(); // skip fill
+            rng = new Random(42);
+            for (int i = 0; i < n; i++) rng.nextInt();
             t0 = System.nanoTime();
             for (int i = 0; i < 10000; i++) {
                 list.get(rng.nextInt(n), mList);
@@ -69,7 +67,6 @@ public class Benchmark {
     }
 
     private static void runW2(int n, PrintWriter writer) {
-        // W2: Search
         double[] daTimes = new double[RUNS];
         Metrics[] daMetrics = new Metrics[RUNS];
         double[] listTimes = new double[RUNS];
@@ -90,7 +87,6 @@ public class Benchmark {
             for (int i = 0; i < 500; i++) queries[i] = inserted[rng.nextInt(n)];
             for (int i = 500; i < 1000; i++) queries[i] = 1_000_000 + rng.nextInt(1_000_000);
 
-            // DA
             Metrics mDA = new Metrics();
             long t0 = System.nanoTime();
             for (int q : queries) da.contains(q, mDA);
@@ -98,7 +94,6 @@ public class Benchmark {
             daTimes[r] = (t1 - t0) / 1_000_000.0;
             daMetrics[r] = mDA;
 
-            // List
             Metrics mList = new Metrics();
             t0 = System.nanoTime();
             for (int q : queries) list.contains(q, mList);
@@ -112,7 +107,6 @@ public class Benchmark {
     }
 
     private static void runW3(int n, PrintWriter writer) {
-        // W3: Head and Middle Insert/Remove
         for (String variant : new String[]{"head", "middle"}) {
             double[] daTimes = new double[RUNS];
             Metrics[] daMetrics = new Metrics[RUNS];
@@ -131,7 +125,6 @@ public class Benchmark {
 
                 int idx = variant.equals("head") ? 0 : da.size() / 2;
 
-                // DA
                 Metrics mDA = new Metrics();
                 long t0 = System.nanoTime();
                 for (int i = 0; i < 1000; i++) da.add(idx, 999, mDA);
@@ -140,7 +133,6 @@ public class Benchmark {
                 daTimes[r] = (t1 - t0) / 1_000_000.0;
                 daMetrics[r] = mDA;
 
-                // List
                 Metrics mList = new Metrics();
                 t0 = System.nanoTime();
                 for (int i = 0; i < 1000; i++) list.add(idx, 999, mList);
@@ -156,7 +148,6 @@ public class Benchmark {
     }
 
     private static void runW4(int n, PrintWriter writer) {
-        // W4: Priority Processing
         double[] times = new double[RUNS];
         Metrics[] metrics = new Metrics[RUNS];
 
@@ -186,11 +177,9 @@ public class Benchmark {
         for (int i = 0; i < RUNS; i++) sortedTimes[i] = times[i];
         Arrays.sort(sortedTimes);
 
-        // median index is 2
-        int medianIdx = 2;
+        int medianIdx = RUNS / 2;
         double medTime = sortedTimes[medianIdx];
 
-        // find metrics corresponding to median time
         Metrics medM = metrics[0];
         for (int i = 0; i < RUNS; i++) {
             if (times[i] == medTime) {
@@ -199,6 +188,6 @@ public class Benchmark {
             }
         }
 
-        writer.printf("%s,%s,%s,%d,%.4f,%d,%d,%d\n", wl, var, struct, n, medTime, medM.steps, medM.moves, medM.comparisons);
+        writer.printf(Locale.US, "%s,%s,%s,%d,%.4f,%d,%d,%d\n", wl, var, struct, n, medTime, medM.steps, medM.moves, medM.comparisons);
     }
 }

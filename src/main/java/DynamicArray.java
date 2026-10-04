@@ -7,7 +7,9 @@ public class DynamicArray {
         this.size = 0;
     }
 
-    public int size() { return size; }
+    public int size() {
+        return size;
+    }
 
     private void ensureCapacity(Metrics metrics) {
         if (size == data.length) {
