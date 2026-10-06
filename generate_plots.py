@@ -2,77 +2,72 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-csv_path = 'results/results.csv'
-if not os.path.exists(csv_path):
-    print("Error: results/results.csv not found!")
-    exit()
-
-df = pd.read_csv(csv_path)
-df.columns = df.columns.str.strip().str.lower()
-
 os.makedirs('results/plots', exist_ok=True)
 
-w1 = df[df['workload'].astype(str).str.upper() == 'W1']
-if not w1.empty:
-    plt.figure(figsize=(8, 5))
-    for struct in w1['structure'].unique():
-        sub = w1[w1['structure'] == struct].sort_values('n')
-        plt.plot(sub['n'], sub['time_ms'], marker='o', linestyle='-', linewidth=2, label=struct)
-    if len(w1['n'].unique()) > 1:
-        plt.xscale('log')
-    plt.title('W1: Random Access Time vs n')
-    plt.xlabel('n')
-    plt.ylabel('Time (ms)')
-    plt.legend()
-    plt.grid(True, which="both", ls="--")
-    plt.savefig('results/plots/w1_time.png', dpi=300)
-    plt.close()
+df = pd.read_csv('results/results.csv')
+df.columns = df.columns.str.strip()
 
-w2 = df[df['workload'].astype(str).str.upper() == 'W2']
-if not w2.empty:
-    plt.figure(figsize=(8, 5))
-    for struct in w2['structure'].unique():
-        sub = w2[w2['structure'] == struct].sort_values('n')
-        plt.plot(sub['n'], sub['comparisons'], marker='s', linestyle='-', linewidth=2, label=struct)
-    if len(w2['n'].unique()) > 1:
-        plt.xscale('log')
-    plt.title('W2: Search Comparisons vs n')
-    plt.xlabel('n')
-    plt.ylabel('Comparisons')
-    plt.legend()
-    plt.grid(True, which="both", ls="--")
-    plt.savefig('results/plots/w2_comparisons.png', dpi=300)
-    plt.close()
+workloads = ['W1', 'W2', 'W3_head', 'W3_middle', 'W4']
 
-w3 = df[df['workload'].astype(str).str.upper() == 'W3']
-if not w3.empty:
-    plt.figure(figsize=(8, 5))
-    for key, grp in w3.groupby(['structure', 'variant']):
-        grp_sorted = grp.sort_values('n')
-        plt.plot(grp_sorted['n'], grp_sorted['time_ms'], marker='^', linestyle='-', linewidth=2, label=f"{key[0]} ({key[1]})")
-    if len(w3['n'].unique()) > 1:
-        plt.xscale('log')
-    plt.title('W3: Insert & Remove Time vs n')
-    plt.xlabel('n')
-    plt.ylabel('Time (ms)')
-    plt.legend()
-    plt.grid(True, which="both", ls="--")
-    plt.savefig('results/plots/w3_time.png', dpi=300)
-    plt.close()
+metrics = [
+    ('time_ms', 'Median time (ms)'),
+    ('steps', 'steps (count)'),
+    ('moves', 'moves (count)'),
+    ('comparisons', 'comparisons (count)')
+]
 
-w4 = df[df['workload'].astype(str).str.upper() == 'W4']
-if not w4.empty:
-    plt.figure(figsize=(8, 5))
-    w4_sorted = w4.sort_values('n')
-    plt.plot(w4_sorted['n'], w4_sorted['time_ms'], marker='o', linestyle='-', linewidth=2, color='green', label='MinHeap')
-    if len(w4['n'].unique()) > 1:
-        plt.xscale('log')
-    plt.title('W4: MinHeap Time vs n')
-    plt.xlabel('n')
-    plt.ylabel('Time (ms)')
-    plt.legend()
-    plt.grid(True, which="both", ls="--")
-    plt.savefig('results/plots/w4_time.png', dpi=300)
-    plt.close()
+for wl in df['workload'].unique():
+    sub_wl = df[df['workload'] == wl]
 
-print("Plots successfully generated in results/plots/")
+    variants = sub_wl['variant'].unique()
+    for var in variants:
+        if var != '-':
+            sub = sub_wl[sub_wl['variant'] == var]
+            title_prefix = f"{wl} ({var})"
+            filename = f"{wl.lower()}_{var}_all_metrics.png"
+        else:
+            sub = sub_wl
+            title_prefix = f"{wl}"
+            filename = f"{wl.lower()}_all_metrics.png"
+
+        fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+        axes = axes.flatten()
+
+        for idx, (metric, ylabel) in enumerate(metrics):
+            ax = axes[idx]
+            has_data = False
+
+            for struct in sub['structure'].unique():
+                data_struct = sub[sub['structure'] == struct].sort_values('n')
+
+                if (data_struct[metric] > 0).any():
+                    has_data = True
+                    ax.plot(
+                        data_struct['n'],
+                        data_struct[metric],
+                        marker='o',
+                        linewidth=2,
+                        label=struct
+                    )
+
+            ax.set_xscale('log')
+            ax.set_xlabel('n (elements)')
+            ax.set_ylabel(ylabel)
+            ax.grid(True, which="both", ls="--", alpha=0.5)
+
+            if has_data:
+                if metric in ['time_ms', 'steps'] or (sub[metric] > 0).all():
+                    ax.set_yscale('log')
+                ax.legend()
+            else:
+                ax.text(0.5, 0.5, 'All counts = 0', horizontalalignment='center',
+                        verticalalignment='center', transform=ax.transAxes, fontsize=12)
+                ax.set_ylim(-0.1, 1.1)
+
+        fig.suptitle(f"{title_prefix} - Performance & Metrics Analysis", fontsize=14, fontweight='bold')
+        plt.tight_layout()
+
+        filepath = os.path.join('results/plots', filename)
+        plt.savefig(filepath, dpi=300)
+        plt.close()
+        print(f"Generated: {filepath}")
